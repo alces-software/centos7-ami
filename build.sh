@@ -18,8 +18,10 @@ mkpart primary xfs 2 100%
 quit
 
 
+
+
 END
-mkfs.xfs -L root ${DEVICE}2
+mkfs.xfs -f -L root ${DEVICE}2
 mkdir -p $ROOTFS
 mount ${DEVICE}2 $ROOTFS
 
@@ -70,7 +72,7 @@ GRUB_TIMEOUT=1
 GRUB_DEFAULT=saved
 GRUB_DISABLE_SUBMENU=true
 GRUB_TERMINAL_OUTPUT="console"
-GRUB_CMDLINE_LINUX="crashkernel=auto console=ttyS0,115200n8 console=tty0 net.ifnames=0"
+GRUB_CMDLINE_LINUX="crashkernel=auto console=ttyS0,115200n8 console=tty0 net.ifnames=0 blacklist=nouveau rdblacklist=nouveau nouveau.modeset=0"
 GRUB_DISABLE_RECOVERY="true"
 END
 echo 'RUN_FIRSTBOOT=NO' > ${ROOTFS}/etc/sysconfig/firstboot
@@ -89,6 +91,10 @@ chroot ${ROOTFS} yum --nogpgcheck -y install cloud-init cloud-utils-growpart gdi
 chroot ${ROOTFS} systemctl enable sshd.service
 chroot ${ROOTFS} systemctl enable cloud-init.service
 chroot ${ROOTFS} systemctl mask tmp.mount
+
+
+#Prevent nouveau load
+echo "blacklist nouveau" > ${ROOTFS}/etc/modprobe.d/nouveau.conf
 
 # Configure cloud-init
 cat > ${ROOTFS}/etc/cloud/cloud.cfg << END
@@ -145,7 +151,7 @@ cloud_final_modules:
 
 system_info:
   default_user:
-    name: ec2-user
+    name: centos
     lock_passwd: true
     gecos: Cloud User
     groups: [wheel, adm, systemd-journal]
@@ -219,14 +225,18 @@ sed -i -e 's/^\(SELINUX=\).*/\1disabled/' ${ROOTFS}/etc/selinux/config
 # Remove EPEL
 yum --installroot=$ROOTFS -C -y remove epel-release --setopt="clean_requirements_on_remove=1"
 
+#Cleanup
+yum --installroot=$ROOTFS clean all
+
+
 # We're done!
 for d in $BINDMNTS ; do
   umount ${ROOTFS}/${d}
 done
 umount ${ROOTFS}/proc
 sync
+sleep 60
 umount ${ROOTFS}
 
 # Snapshot the volume then create the AMI with:
-# aws ec2 register-image --name 'CentOS-7.0-test' --description 'Unofficial CentOS7 + cloud-init' --virtualization-type hvm --root-device-name /dev/sda1 --block-device-mappings '[{"DeviceName":"/dev/sda1","Ebs": { "SnapshotId": "snap-7f042d5f", "VolumeSize":5,  "DeleteOnTermination": true, "VolumeType": "gp2"}}, { "DeviceName":"/dev/xvdb","VirtualName":"ephemeral0"}, { "DeviceName":"/dev/xvdc","VirtualName":"ephemeral1"}]' --architecture x86_64 --sriov-net-support simple --ena-support
-
+# aws ec2 register-image --name 'CENTOS7-BASE-2.0' --description 'Clean centos7 for flight' --virtualization-type hvm --root-device-name /dev/sda1 --block-device-mappings '[{"DeviceName":"/dev/sda1","Ebs": { "SnapshotId":"snap-7d35aa4f", "VolumeSize":16,  "DeleteOnTermination": true, "VolumeType": "gp2"}}, { "DeviceName":"/dev/xvdb","VirtualName":"ephemeral0"}, { "DeviceName":"/dev/xvdc","VirtualName":"ephemeral1"}]' --architecture x86_64 --sriov-net-support simple --ena-support
