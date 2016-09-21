@@ -228,6 +228,8 @@ yum --installroot=$ROOTFS -C -y remove epel-release --setopt="clean_requirements
 #Cleanup
 yum --installroot=$ROOTFS clean all
 
+#Change default runlevel
+ln -snf /usr/lib/systemd/system/multi-user.target $ROOTFS/etc/systemd/system/default.target 
 
 # We're done!
 for d in $BINDMNTS ; do
