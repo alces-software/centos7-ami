@@ -241,4 +241,4 @@ sleep 60
 umount ${ROOTFS}
 
 # Snapshot the volume then create the AMI with:
-# aws ec2 register-image --name 'CENTOS7-BASE-2.0' --description 'Clean centos7 for flight' --virtualization-type hvm --root-device-name /dev/sda1 --block-device-mappings '[{"DeviceName":"/dev/sda1","Ebs": { "SnapshotId":"snap-7d35aa4f", "VolumeSize":16,  "DeleteOnTermination": true, "VolumeType": "gp2"}}, { "DeviceName":"/dev/xvdb","VirtualName":"ephemeral0"}, { "DeviceName":"/dev/xvdc","VirtualName":"ephemeral1"}]' --architecture x86_64 --sriov-net-support simple --ena-support
+# aws ec2 register-image --name 'CENTOS7-BASE-3.0' --description 'Clean centos7 for flight' --virtualization-type hvm --root-device-name /dev/sda1 --block-device-mappings '[{"DeviceName":"/dev/sda1","Ebs": { "SnapshotId":"snap-7d35aa4f", "VolumeSize":16,  "DeleteOnTermination": true, "VolumeType": "gp2"}}, { "DeviceName":"/dev/xvdb","VirtualName":"ephemeral0"}, { "DeviceName":"/dev/xvdc","VirtualName":"ephemeral1"}]' --architecture x86_64 --sriov-net-support simple --ena-support
