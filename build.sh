@@ -193,7 +193,8 @@ END
 chroot $ROOTFS dkms add -m ixgbevf -v ${IXGBEVF_VER}
 chroot $ROOTFS dkms build -m ixgbevf -v ${IXGBEVF_VER} -k $KVER
 chroot $ROOTFS dkms install -m ixgbevf -v ${IXGBEVF_VER} -k $KVER
-echo "options ixgbevf InterruptThrottleRate=1,1,1,1,1,1,1,1" > ${ROOTFS}/etc/modprobe.d/ixgbevf.conf
+#This causes 3.3.2 of ixgbevf not to load as the option is no longer supported
+#echo "options ixgbevf InterruptThrottleRate=1,1,1,1,1,1,1,1" > ${ROOTFS}/etc/modprobe.d/ixgbevf.conf
 # Enable Amazon ENA
 # Create an archive file locally from git first
 yum -y install git patch
