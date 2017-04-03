@@ -5,9 +5,9 @@
 
 DEVICE=/dev/xvdb
 ROOTFS=/rootfs
-IXGBEVF_VER=3.3.2
-ENA_VER=1.1.2
-ENA_COMMIT=a485656
+IXGBEVF_VER=3.2.2
+ENA_VER=1.1.3
+ENA_COMMIT=3ac3e0b
 TMPDIR=/tmp
 
 cat | parted ${DEVICE} << END
@@ -179,6 +179,10 @@ KVER=$(chroot $ROOTFS rpm -q kernel | sed -e 's/^kernel-//')
 yum --installroot=$ROOTFS --nogpgcheck -y install dkms make
 curl -L http://sourceforge.net/projects/e1000/files/ixgbevf%20stable/${IXGBEVF_VER}/ixgbevf-${IXGBEVF_VER}.tar.gz/download > /tmp/ixgbevf.tar.gz
 tar zxf /tmp/ixgbevf.tar.gz -C ${ROOTFS}/usr/src
+# Newer drivers are missing InterruptThrottleRate - patch the old one instead
+yum -y install patch
+curl -L https://sourceforge.net/p/e1000/bugs/_discuss/thread/a5c4e75f/837d/attachment/ixgbevf-3.2.2_rhel73.patch |
+  patch -p1 -d ${ROOTFS}/usr/src/ixgbevf-${IXGBEVF_VER}
 cat > ${ROOTFS}/usr/src/ixgbevf-${IXGBEVF_VER}/dkms.conf << END
 PACKAGE_NAME="ixgbevf"
 PACKAGE_VERSION="${IXGBEVF_VER}"
@@ -202,9 +206,6 @@ mkdir -p ${TMPDIR}/ena
 git clone https://github.com/amzn/amzn-drivers.git ${TMPDIR}/ena
 cd ${TMPDIR}/ena
 git archive --prefix ena-${ENA_VER}/ ${ENA_COMMIT} | tar xC ${ROOTFS}/usr/src
-# Temporary - workaround compile failure with new EL 7.3 kernel - see https://github.com/amzn/amzn-drivers/issues/5
-curl -sL https://github.com/amzn/amzn-drivers/files/658541/0099081480_1481751768_rhel_7_3.txt |
-  patch -p1 -d ${ROOTFS}/usr/src/ena-${ENA_VER}/
 cat > ${ROOTFS}/usr/src/ena-${ENA_VER}/dkms.conf << END
 PACKAGE_NAME="ena"
 PACKAGE_VERSION="${ENA_VER}"
