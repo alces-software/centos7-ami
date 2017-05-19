@@ -178,7 +178,7 @@ END
 # Add additional AWS drivers
 KVER=$(chroot $ROOTFS rpm -q kernel | sed -e 's/^kernel-//')
 # Enable sr-iov
-yum --installroot=$ROOTFS --nogpgcheck -y install dkms make
+yum --installroot=$ROOTFS --nogpgcheck -y install dkms make kernel-devel
 curl -L http://sourceforge.net/projects/e1000/files/ixgbevf%20stable/${IXGBEVF_VER}/ixgbevf-${IXGBEVF_VER}.tar.gz/download > /tmp/ixgbevf.tar.gz
 tar zxf /tmp/ixgbevf.tar.gz -C ${ROOTFS}/usr/src
 # Newer drivers are missing InterruptThrottleRate - patch the old one instead
