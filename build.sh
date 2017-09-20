@@ -20,7 +20,7 @@ quit
 END
 # Wait for a moment, because xvdb2 might not have been picked up yet.
 sleep 5
-mkfs.xfs -f -L root ${DEVICE}2
+mkfs.xfs -n ftype=1 -L root ${DEVICE}2
 mkdir -p $ROOTFS
 mount ${DEVICE}2 $ROOTFS
 
