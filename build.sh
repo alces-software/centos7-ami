@@ -90,7 +90,8 @@ add_drivers+=" nvme "
 EOF
 
 # Recreate initramfs
-chroot ${ROOTFS} dracut -f
+KVER=$(echo /rootfs/boot/vmlinuz-* | cut -f2- -d'-')
+chroot ${ROOTFS} dracut -f /boot/initramfs-${KVER}.img ${KVER}
 
 # Install grub2
 chroot ${ROOTFS} grub2-mkconfig -o /boot/grub2/grub.cfg
