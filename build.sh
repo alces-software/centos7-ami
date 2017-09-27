@@ -84,6 +84,14 @@ for d in $BINDMNTS ; do
   mount --bind /${d} ${ROOTFS}/${d}
 done
 mount -t proc none ${ROOTFS}/proc
+# Ensure nvme driver is included in initramfs
+cat <<EOF > ${ROOTFS}/etc/dracut.conf.d/10-nvme.conf
+add_drivers+=" nvme "
+EOF
+
+# Recreate initramfs
+chroot ${ROOTFS} dracut -f
+
 # Install grub2
 chroot ${ROOTFS} grub2-mkconfig -o /boot/grub2/grub.cfg
 chroot ${ROOTFS} grub2-install $DEVICE
