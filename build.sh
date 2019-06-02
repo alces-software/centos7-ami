@@ -3,33 +3,31 @@
 # Build a new CentOS7 install on EBS volume in a chroot
 # Run from RHEL7 or CentOS7 instance
 
-DEVICE=/dev/xvdb
+DEVICE=/dev/nvme1n1
 ROOTFS=/rootfs
 TMPDIR=/tmp
 
-cat | parted ${DEVICE} << END
+cat << END | parted ${DEVICE}
 mktable gpt
 mkpart primary ext2 1 2
 set 1 bios_grub on
 mkpart primary xfs 2 100%
 quit
-
-
-
-
 END
-# Wait for a moment, because xvdb2 might not have been picked up yet.
+# Wait for a moment, because partition might not have been picked up yet.
+echo "Parted complete - syncing"
 sleep 5
-mkfs.xfs -n ftype=1 -L root ${DEVICE}2
+mkfs.xfs -f -n ftype=1 -L root ${DEVICE}p2
 mkdir -p $ROOTFS
-mount ${DEVICE}2 $ROOTFS
+mount ${DEVICE}p2 $ROOTFS
 
 ### Basic CentOS Install
 rpm --root=$ROOTFS --initdb
-rpm --root=$ROOTFS -ivh \
-  https://mirror.bytemark.co.uk/centos/7.4.1708/os/x86_64/Packages/centos-release-7-4.1708.el7.centos.x86_64.rpm
+rpm --root=$ROOTFS -ivh --nodeps\
+  https://mirror.bytemark.co.uk/centos/7.6.1810/os/x86_64/Packages/centos-release-7-6.1810.2.el7.centos.x86_64.rpm
 # Install necessary packages
 yum --installroot=$ROOTFS --nogpgcheck -y groupinstall core
+yum --installroot=$ROOTFS --nogpgcheck -y reinstall centos-release
 yum --installroot=$ROOTFS --nogpgcheck -y install openssh-server grub2 acpid deltarpm cloud-init cloud-utils-growpart gdisk
 # Remove unnecessary packages
 UNNECESSARY="NetworkManager firewalld linux-firmware ivtv-firmware iwl*firmware"
