@@ -23,6 +23,18 @@ mount ${DEVICE}p2 $ROOTFS
 
 ### Basic CentOS Install
 rpm --root=$ROOTFS --initdb
+
+BINDMNTS="dev sys etc/hosts etc/resolv.conf"
+
+for d in $BINDMNTS ; do
+  if [ -d /${d} ]; then
+    mkdir -p ${ROOTFS}/${d}
+  fi
+  mount --bind /${d} ${ROOTFS}/${d}
+done
+mkdir -p ${ROOTFS}/proc
+mount -t proc none ${ROOTFS}/proc
+
 rpm --root=$ROOTFS -ivh --nodeps\
   https://mirror.bytemark.co.uk/centos/7.6.1810/os/x86_64/Packages/centos-release-7-6.1810.2.el7.centos.x86_64.rpm
 # Install necessary packages
@@ -76,12 +88,6 @@ GRUB_DISABLE_RECOVERY="true"
 END
 echo 'RUN_FIRSTBOOT=NO' > ${ROOTFS}/etc/sysconfig/firstboot
 
-BINDMNTS="dev sys etc/hosts etc/resolv.conf"
-
-for d in $BINDMNTS ; do
-  mount --bind /${d} ${ROOTFS}/${d}
-done
-mount -t proc none ${ROOTFS}/proc
 # Ensure nvme driver is included in initramfs
 cat <<EOF > ${ROOTFS}/etc/dracut.conf.d/10-nvme.conf
 add_drivers+=" nvme "
