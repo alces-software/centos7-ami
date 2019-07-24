@@ -14,3 +14,4 @@ https://www.bashton.com/blog/2017/centos-7.3-ami/
 - Local ephemeral storage mounted at `/media/ephemeral0`
 - Default user account `ec2-user`
 
+Note that c5, c5d, i3.metal, m5 and m5d instance types will show in the AWS console that their EBS voulumes will show up on `/dev/sdx`, however they will actually show up as `/dev/nvme[0-26]n1`. Other instance types will still show as `/dev/sdx` or `/dev/vdx`.
