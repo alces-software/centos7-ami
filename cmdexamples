@@ -1,0 +1,3 @@
+qemu-img convert -p -f raw -O vpc -o subformat=fixed,force_size /mnt/resource/VHD.img /mnt/resource/centos7.vhd
+az storage blob upload --account-name openflightstevestorage --container-name openflightstevestoragecontainer --type page --file /mnt/resource/centos7.vhd --name CENTOS7CLEAN.vhd
+az image create --resource-group openflightsteve --name CENTOS7CLEAN  --os-type Linux --source https://openflightstevestorage.blob.core.windows.net/openflightstevestoragecontainer/CENTOS7CLEAN.vhd
